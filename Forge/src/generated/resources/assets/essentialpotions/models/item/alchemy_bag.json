@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "essentialpotions:item/alchemy_bag",
+    "layer1": "essentialpotions:item/alchemy_bag",
+    "layer2": "essentialpotions:item/alchemy_bag",
+    "layer3": "essentialpotions:item/alchemy_bag",
+    "layer4": "essentialpotions:item/alchemy_bag"
+  }
+}

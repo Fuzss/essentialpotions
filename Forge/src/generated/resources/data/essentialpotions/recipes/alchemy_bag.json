@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "#": [
+      {
+        "item": "minecraft:rabbit_hide"
+      },
+      {
+        "item": "minecraft:leather"
+      }
+    ],
+    "+": {
+      "item": "minecraft:blaze_powder"
+    },
+    "@": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "@#@",
+    "#+#",
+    "###"
+  ],
+  "result": {
+    "item": "essentialpotions:alchemy_bag"
+  }
+}
