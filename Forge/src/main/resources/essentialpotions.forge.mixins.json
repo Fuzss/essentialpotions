@@ -5,8 +5,6 @@
   "package": "fuzs.essentialpotions.mixin",
   "refmap": "essentialpotions.refmap.json",
   "mixins": [
-    "ReloadableResourceManagerMixin",
-    "FontMixin"
   ],
   "client": [
   ],
