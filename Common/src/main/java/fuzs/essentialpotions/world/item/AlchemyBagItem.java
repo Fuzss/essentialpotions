@@ -1,67 +1,123 @@
 package fuzs.essentialpotions.world.item;
 
+import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
+import fuzs.essentialpotions.world.inventory.ContainerItemHelper;
+import fuzs.essentialpotions.world.inventory.UnlimitedContainerUtils;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.*;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import java.util.stream.Stream;
-
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
+    public static final int POTION_MAX_STACK_SIZE = 16;
 
     public AlchemyBagItem(Properties properties) {
         super(properties);
     }
 
-//    @Override
-//    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-//        ItemStack stack = player.getItemInHand(hand);
-//        if (!level.isClientSide) {
-//            player.openMenu(this.getMenuProvider(stack));
-//            player.awardStat(Stats.ITEM_USED.get(this));
-//        }
-//        return InteractionResultHolder.consume(stack);
-//    }
-//
-//    private MenuProvider getMenuProvider(ItemStack stack) {
-//        return new SimpleMenuProvider((containerId, inventory, player) -> {
-//            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, 1);
-//            return new BagItemMenu(this.type, containerId, inventory, container);
-//        }, stack.getHoverName());
-//    }
-//
-//    @Override
-//    public void onDestroyed(ItemEntity itemEntity) {
-//        Stream.Builder<ItemStack> builder = Stream.builder();
-//        SimpleContainer container = ContainerItemHelper.loadItemContainer(itemEntity.getItem(), null, 1);
-//        for (int i = 0; i < container.getContainerSize(); i++) {
-//            ItemStack stack = container.getItem(i);
-//            if (!stack.isEmpty()) {
-//                builder.add(stack);
-//            }
-//        }
-//        ItemUtils.onContainerDestroyed(itemEntity, builder.build());
-//    }
+    public InteractionResultHolder<ItemStack> useSelf(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!level.isClientSide) {
+            player.openMenu(this.getMenuProvider(stack));
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
+        return InteractionResultHolder.consume(stack);
+    }
+
+    private MenuProvider getMenuProvider(ItemStack stack) {
+        return new SimpleMenuProvider((containerId, inventory, player) -> {
+            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
+            return new AlchemyBagMenu(containerId, inventory, container);
+        }, stack.getHoverName());
+    }
+
+    @Override
+    public void onDestroyed(ItemEntity itemEntity) {
+        SimpleContainer container = ContainerItemHelper.loadItemContainer(itemEntity.getItem(), null);
+        UnlimitedContainerUtils.dropContents(itemEntity.level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), container);
+    }
+
+    @Override
+    public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity livingEntity) {
+        if (!(livingEntity instanceof Player player) || !player.isSecondaryUseActive()) {
+            ItemStack item = this.getRenderItem(stack);
+            if (!item.isEmpty()) {
+                ItemStack result = item.finishUsingItem(level, livingEntity);
+                if (item != result && livingEntity instanceof Player player) {
+                    player.getInventory().add(result);
+                }
+                return stack;
+            }
+        }
+        return super.finishUsingItem(stack, level, livingEntity);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        if (player == null || !player.isSecondaryUseActive()) {
+            ItemStack itemInHand = context.getItemInHand();
+            ItemStack item = this.getRenderItem(itemInHand);
+            if (!item.isEmpty()) {
+                itemInHand = itemInHand.copy();
+                InteractionResult interactionResult = item.useOn(context);
+                if (interactionResult.consumesAction() && player != null) {
+                    ItemStack currentItemInHand = player.getItemInHand(context.getHand());
+                    if (!ItemStack.matches(currentItemInHand, itemInHand)) {
+                        player.setItemInHand(context.getHand(), itemInHand);
+                        player.getInventory().add(currentItemInHand);
+                    }
+                }
+                return interactionResult;
+            }
+        }
+        return super.useOn(context);
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
+        if (!player.isSecondaryUseActive()) {
+            ItemStack item = this.getRenderItem(player.getItemInHand(usedHand));
+            if (!item.isEmpty()) {
+                return item.use(level, player, usedHand);
+            }
+        }
+        return this.useSelf(level, player, usedHand);
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        ItemStack item = this.getRenderItem(stack);
+        return !item.isEmpty() ? item.getUseDuration() : super.getUseDuration(stack);
+    }
+
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        ItemStack item = this.getRenderItem(stack);
+        return !item.isEmpty() ? item.getUseAnimation() : super.getUseAnimation(stack);
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        ItemStack item = this.getRenderItem(stack);
+        return !item.isEmpty() ? item.hasFoil() : super.isFoil(stack);
+    }
 
     @Override
     public ItemStack getRenderItem(ItemStack stack) {
-//        if (true) return ItemStack.EMPTY;
-        ItemStack stack1 = new ItemStack(Items.POTION);
-        PotionUtils.setPotion(stack1, Potions.LEAPING);
-        return stack1;
+        ItemStack other = new ItemStack(Items.POTION);
+        PotionUtils.setPotion(other, Potions.LEAPING);
+        return other;
     }
 
     @Override
     public boolean isFoilSelf(ItemStack stack) {
         return super.isFoil(stack);
-    }
-
-    @Override
-    public boolean isFoil(ItemStack stack) {
-        return this.getRenderItem(stack).hasFoil();
     }
 }

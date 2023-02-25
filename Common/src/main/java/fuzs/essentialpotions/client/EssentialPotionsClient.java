@@ -3,6 +3,7 @@ package fuzs.essentialpotions.client;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.core.ClientAbstractions;
+import fuzs.essentialpotions.client.gui.screens.AlchemyBagScreen;
 import fuzs.essentialpotions.client.renderer.block.model.ForwardingItemOverrides;
 import fuzs.essentialpotions.init.ModRegistry;
 import fuzs.essentialpotions.mixin.client.accessor.ItemRendererAccessor;
@@ -27,7 +28,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
 
     @Override
     public void onRegisterMenuScreens(MenuScreensContext context) {
-//        context.registerMenuScreen(ModRegistry.NETHER_CHEST_MENU_TYPE.get(), NetherChestScreen::new);
+        context.registerMenuScreen(ModRegistry.ALCHEMY_BAG_MENU_TYPE.get(), AlchemyBagScreen::new);
     }
 
     @Override
