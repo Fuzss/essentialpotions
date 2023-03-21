@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     public static final int POTION_MAX_STACK_SIZE = 16;
+    public static final String TAG_SELECTED = "Selected";
 
     public AlchemyBagItem(Properties properties) {
         super(properties);
@@ -119,5 +120,20 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     @Override
     public boolean isFoilSelf(ItemStack stack) {
         return super.isFoil(stack);
+    }
+
+    public boolean canCyclePotions(ItemStack stack) {
+        SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
+        int foundItems = 0;
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            if (!container.getItem(i).isEmpty()) foundItems++;
+            if (foundItems > 1) return true;
+        }
+        return false;
+    }
+
+    public void cyclePotionRight(ItemStack stack) {
+        SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
+        stack.getOrCreateTagElement()
     }
 }
