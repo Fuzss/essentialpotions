@@ -26,7 +26,7 @@ public class ForwardingItemOverrides extends ItemOverrides {
     @Override
     public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
         if (stack.getItem() instanceof ForwardingItem item) {
-            ItemStack otherStack = item.getRenderItem(stack);
+            ItemStack otherStack = item.getSelectedItem(stack);
             if (!otherStack.isEmpty()) {
                 return Minecraft.getInstance().getItemRenderer().getModel(otherStack, level, entity, seed);
             }

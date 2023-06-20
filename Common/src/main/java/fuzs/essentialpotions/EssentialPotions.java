@@ -2,6 +2,8 @@ package fuzs.essentialpotions;
 
 import fuzs.essentialpotions.config.ClientConfig;
 import fuzs.essentialpotions.init.ModRegistry;
+import fuzs.essentialpotions.networking.ServerboundCyclePotionMessage;
+import fuzs.puzzleslib.api.networking.v3.NetworkHandlerV3;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.core.CommonFactories;
 import fuzs.puzzleslib.core.CoreServices;
@@ -17,6 +19,7 @@ public class EssentialPotions implements ModConstructor {
 
     @SuppressWarnings("Convert2MethodRef")
     public static final ConfigHolder CONFIG = CommonFactories.INSTANCE.clientConfig(ClientConfig.class, () -> new ClientConfig());
+    public static final NetworkHandlerV3 NETWORK = NetworkHandlerV3.builder(MOD_ID).registerServerbound(ServerboundCyclePotionMessage.class).build();
 
     @Override
     public void onConstructMod() {

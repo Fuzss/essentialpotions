@@ -58,12 +58,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
     public void onRegisterBuiltinModelItemRenderers(BuiltinModelItemRendererContext context) {
         context.registerItemRenderer(ModRegistry.ALCHEMY_BAG_ITEM.get(), (stack, mode, matrices, vertexConsumers, light, overlay) -> {
             RenderType renderType = ItemBlockRenderTypes.getRenderType(stack, false);
-            boolean hasFoil;
-            if (stack.getItem() instanceof ForwardingItem item) {
-                hasFoil = item.isFoilSelf(stack);
-            } else {
-                hasFoil = stack.hasFoil();
-            }
+            boolean hasFoil = stack.getItem() instanceof ForwardingItem item ? item.isFoilSelf(stack) : stack.hasFoil();
             VertexConsumer vertexConsumer = ItemRenderer.getFoilBuffer(vertexConsumers, renderType, true, hasFoil);
             ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
             ItemModelShaper itemModelShaper = itemRenderer.getItemModelShaper();
@@ -76,7 +71,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
     public void onRegisterItemColorProviders(ColorProvidersContext<Item, ItemColor> context) {
         context.registerColorProvider((itemStack, i) -> {
             if (itemStack.getItem() instanceof ForwardingItem item) {
-                ItemStack renderItem = item.getRenderItem(itemStack);
+                ItemStack renderItem = item.getSelectedItem(itemStack);
                 if (renderItem.getItem() != ModRegistry.ALCHEMY_BAG_ITEM.get()) {
                     return context.getProviders().getColor(renderItem, i);
                 }

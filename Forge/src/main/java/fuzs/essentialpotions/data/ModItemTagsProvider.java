@@ -16,6 +16,6 @@ public class ModItemTagsProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags() {
-        this.tag(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG).add(Items.POTION);
+        this.tag(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG).add(Items.POTION).add(Items.SPLASH_POTION).add(Items.LINGERING_POTION);
     }
 }

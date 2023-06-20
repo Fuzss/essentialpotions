@@ -2,7 +2,6 @@ package fuzs.essentialpotions.config;
 
 import fuzs.puzzleslib.config.ConfigCore;
 import fuzs.puzzleslib.config.annotation.Config;
-import fuzs.slotcycler.SlotCycler;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.BooleanSupplier;
@@ -35,7 +34,7 @@ public class ClientConfig implements ConfigCore {
 
     public enum SlotsDisplayState {
         ALWAYS(() -> true),
-        KEY(() -> SlotCycler.CONFIG.get(ClientConfig.class).scrollingModifierKey.active()),
+//        KEY(() -> SlotCycler.CONFIG.get(ClientConfig.class).scrollingModifierKey.active()),
         NEVER(() -> false);
 
         private final BooleanSupplier show;

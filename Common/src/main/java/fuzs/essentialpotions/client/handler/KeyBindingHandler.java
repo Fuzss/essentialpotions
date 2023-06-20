@@ -1,10 +1,8 @@
 package fuzs.essentialpotions.client.handler;
 
+import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.init.ClientModRegistry;
-import fuzs.slotcycler.SlotCycler;
-import fuzs.slotcycler.client.init.ClientModRegistry;
-import fuzs.slotcycler.config.ClientConfig;
-import fuzs.slotcycler.util.SlotUtil;
+import fuzs.essentialpotions.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -41,7 +39,7 @@ public class KeyBindingHandler {
                 }
             }
         }
-        if (SlotCycler.CONFIG.get(ClientConfig.class).scrollingModifierKey.active()) {
+        if (EssentialPotions.CONFIG.get(ClientConfig.class).scrollingModifierKey.active()) {
             cycleSlotsDisplay = 15;
         }
     }
