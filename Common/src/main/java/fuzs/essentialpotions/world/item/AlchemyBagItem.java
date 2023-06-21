@@ -1,5 +1,8 @@
 package fuzs.essentialpotions.world.item;
 
+import fuzs.essentialpotions.init.ModRegistry;
+import fuzs.essentialpotions.mixin.accessor.LivingEntityAccessor;
+import fuzs.essentialpotions.mixin.accessor.UseOnContextAccessor;
 import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
 import fuzs.essentialpotions.world.inventory.ContainerItemHelper;
 import fuzs.essentialpotions.world.inventory.UnlimitedContainerUtils;
@@ -7,10 +10,15 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.Vanishable;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     public static final int POTION_MAX_STACK_SIZE = 16;
@@ -44,57 +52,103 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity livingEntity) {
-        if (!(livingEntity instanceof Player player) || !player.isSecondaryUseActive()) {
+        if (livingEntity instanceof Player player && this.useSelectedItem(player)) {
             ItemStack selectedItem = this.getSelectedItem(stack);
             if (!selectedItem.isEmpty()) {
-                ItemStack result = selectedItem.finishUsingItem(level, livingEntity);
-                SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
-                container.setItem(stack.getTag().getInt(TAG_SELECTED), selectedItem);
-                if (selectedItem != result && livingEntity instanceof Player player) {
+                ItemStack result = selectedItem.finishUsingItem(level, player);
+                this.setSelectedItem(stack, selectedItem);
+                if (result != selectedItem) {
                     player.getInventory().add(result);
                 }
             }
             return stack;
+        } else {
+            return super.finishUsingItem(stack, level, livingEntity);
         }
-        return super.finishUsingItem(stack, level, livingEntity);
+    }
+
+    public boolean useSelectedItem(Player player) {
+        return !player.isSecondaryUseActive();
+    }
+
+    @Override
+    public void releaseUsing(ItemStack stack, Level level, LivingEntity livingEntity, int timeCharged) {
+        if (livingEntity instanceof Player player && this.useSelectedItem(player)) {
+            ItemStack selectedItem = this.getSelectedItem(stack);
+            if (selectedItem.isEmpty()) {
+                selectedItem.releaseUsing(level, player, timeCharged);
+            }
+        } else {
+            super.releaseUsing(stack, level, livingEntity, timeCharged);
+        }
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
-        if (player == null || !player.isSecondaryUseActive()) {
+        if (player != null && this.useSelectedItem(player)) {
             ItemStack itemInHand = context.getItemInHand();
             ItemStack selectedItem = this.getSelectedItem(itemInHand);
             if (!selectedItem.isEmpty()) {
-                itemInHand = itemInHand.copy();
+                this.setItemInHand(player, context.getHand(), selectedItem);
+                BlockHitResult hitResult = ((UseOnContextAccessor) context).essentialpotions$callGetHitResult();
+                context = new UseOnContext(context.getPlayer(), context.getHand(), hitResult);
                 InteractionResult interactionResult = selectedItem.useOn(context);
-                if (interactionResult.consumesAction() && player != null) {
-                    ItemStack currentItemInHand = player.getItemInHand(context.getHand());
-                    if (!ItemStack.matches(currentItemInHand, itemInHand)) {
-                        player.setItemInHand(context.getHand(), itemInHand);
-                        player.getInventory().add(currentItemInHand);
-                    }
+                ItemStack result = player.getItemInHand(context.getHand());
+                this.setItemInHand(player, context.getHand(), itemInHand);
+                this.setSelectedItem(itemInHand, selectedItem);
+                if (result != selectedItem) {
+                    player.getInventory().add(result);
                 }
                 return interactionResult;
             } else {
                 return InteractionResult.PASS;
             }
+        } else {
+            return super.useOn(context);
         }
-        return super.useOn(context);
+    }
+
+    private void setItemInHand(Player player, InteractionHand interactionHand, ItemStack stack) {
+        Inventory inventory = player.getInventory();
+        if (interactionHand == InteractionHand.OFF_HAND) {
+            inventory.offhand.set(0, stack);
+        } else {
+            inventory.items.set(inventory.selected, stack);
+        }
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
-        if (!player.isSecondaryUseActive()) {
+
+        if (this.useSelectedItem(player)) {
+
             ItemStack itemInHand = player.getItemInHand(usedHand);
             ItemStack selectedItem = this.getSelectedItem(itemInHand);
             if (!selectedItem.isEmpty()) {
-                return selectedItem.use(level, player, usedHand);
+
+                this.setItemInHand(player, usedHand, selectedItem);
+                InteractionResultHolder<ItemStack> result = selectedItem.use(level, player, usedHand);
+                this.setItemInHand(player, usedHand, itemInHand);
+
+                this.setSelectedItem(itemInHand, selectedItem);
+                if (result.getObject() != selectedItem) {
+                    player.getInventory().add(result.getObject());
+                }
+
+                if (player.getUseItem() == result.getObject()) {
+                    ((LivingEntityAccessor) player).essentialpotions$setUseItem(itemInHand);
+                }
+
+                return new InteractionResultHolder<>(result.getResult(), itemInHand);
             } else {
+
                 return InteractionResultHolder.pass(itemInHand);
             }
+        } else {
+
+            return this.useSelf(level, player, usedHand);
         }
-        return this.useSelf(level, player, usedHand);
     }
 
     @Override
@@ -125,11 +179,26 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     }
 
     @Override
+    public boolean setSelectedItem(ItemStack stack, ItemStack selectedItem) {
+        if (this.isAllowedInside(selectedItem) && stack.hasTag()) {
+            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
+            container.setItem(stack.getTag().getInt(TAG_SELECTED), selectedItem);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean isFoilSelf(ItemStack stack) {
         return super.isFoil(stack);
     }
 
-//    public boolean canCyclePotions(ItemStack stack) {
+    @Override
+    public boolean isAllowedInside(ItemStack stack) {
+        return true || stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
+    }
+
+    //    public boolean canCyclePotions(ItemStack stack) {
 //        SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
 //        int foundItems = 0;
 //        for (int i = 0; i < container.getContainerSize(); i++) {

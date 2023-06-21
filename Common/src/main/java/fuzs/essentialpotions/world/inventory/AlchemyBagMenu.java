@@ -28,7 +28,7 @@ public class AlchemyBagMenu extends UnlimitedContainerMenu {
 
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
+                    return true || stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
                 }
             });
         }

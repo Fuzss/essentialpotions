@@ -2,11 +2,10 @@ package fuzs.essentialpotions;
 
 import fuzs.essentialpotions.config.ClientConfig;
 import fuzs.essentialpotions.init.ModRegistry;
-import fuzs.essentialpotions.networking.ServerboundCyclePotionMessage;
+import fuzs.essentialpotions.network.ServerboundCyclePotionMessage;
 import fuzs.puzzleslib.api.networking.v3.NetworkHandlerV3;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.core.CommonFactories;
-import fuzs.puzzleslib.core.CoreServices;
 import fuzs.puzzleslib.core.ModConstructor;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;

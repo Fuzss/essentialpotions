@@ -1,5 +1,7 @@
 {
   "values": [
-    "minecraft:potion"
+    "minecraft:potion",
+    "minecraft:splash_potion",
+    "minecraft:lingering_potion"
   ]
 }

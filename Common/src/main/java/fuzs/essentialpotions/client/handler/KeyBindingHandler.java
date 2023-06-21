@@ -3,39 +3,64 @@ package fuzs.essentialpotions.client.handler;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.init.ClientModRegistry;
 import fuzs.essentialpotions.config.ClientConfig;
+import fuzs.essentialpotions.init.ModRegistry;
+import fuzs.essentialpotions.world.item.AlchemyBagItem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 
 public class KeyBindingHandler {
     public static int cycleSlotsDisplay;
+    public static int globalPopTime;
+    public static int toolHighlightTimer;
+    public static ItemStack lastToolHighlight = ItemStack.EMPTY;
 
     public static void onClientTick$Start(Minecraft minecraft) {
         if (cycleSlotsDisplay > 0) cycleSlotsDisplay--;
+        if (globalPopTime > 0) globalPopTime--;
+        if (toolHighlightTimer > 0) {
+            toolHighlightTimer--;
+            for (InteractionHand interactionHand : InteractionHand.values()) {
+                ItemStack itemInHand = minecraft.player.getItemInHand(interactionHand);
+                if (itemInHand.is(ModRegistry.ALCHEMY_BAG_ITEM.get())) {
+                    lastToolHighlight = ((AlchemyBagItem) itemInHand.getItem()).getSelectedItem(itemInHand);
+                    break;
+                } else {
+                    lastToolHighlight = ItemStack.EMPTY;
+                }
+            }
+        }
         if (minecraft.getOverlay() == null && (minecraft.screen == null || minecraft.screen.passEvents)) {
             handleKeybinds(minecraft.player);
         }
     }
 
     private static void handleKeybinds(Player player) {
-        while (ClientModRegistry.CYCLE_LEFT_KEY_MAPPING.consumeClick()) {
-            if (!player.isSpectator()) {
-                if (SlotUtil.cycleSlotsLeft(player, KeyBindingHandler::swapSlots)) {
-                    // not sure if this actually does something client-side
-                    player.stopUsingItem();
-                    setPopTimeColumn(player);
-                    cycleSlotsDisplay = 15;
+        if (!player.isSpectator()) {
+            while (ClientModRegistry.CYCLE_LEFT_KEY_MAPPING.consumeClick()) {
+                for (InteractionHand interactionHand : InteractionHand.values()) {
+                    ItemStack itemInHand = player.getItemInHand(interactionHand);
+                    if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
+                        if (SlotRendererHandler.INSTANCE.cycleSlotBackward(player.getInventory(), interactionHand)) {
+                            globalPopTime = 5;
+                            toolHighlightTimer = 40;
+                            break;
+                        }
+                    }
                 }
             }
-        }
-        while (ClientModRegistry.CYCLE_RIGHT_KEY_MAPPING.consumeClick()) {
-            if (!player.isSpectator()) {
-                if (SlotUtil.cycleSlotsRight(player, KeyBindingHandler::swapSlots)) {
-                    // not sure if this actually does something client-side
-                    player.stopUsingItem();
-                    setPopTimeColumn(player);
-                    cycleSlotsDisplay = 15;
+            while (ClientModRegistry.CYCLE_RIGHT_KEY_MAPPING.consumeClick()) {
+                for (InteractionHand interactionHand : InteractionHand.values()) {
+                    ItemStack itemInHand = player.getItemInHand(interactionHand);
+                    if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
+                        if (SlotRendererHandler.INSTANCE.cycleSlotForward(player.getInventory(), interactionHand)) {
+                            globalPopTime = 5;
+                            toolHighlightTimer = 40;
+                            break;
+                        }
+                    }
                 }
             }
         }

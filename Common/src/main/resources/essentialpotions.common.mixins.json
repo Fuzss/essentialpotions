@@ -5,8 +5,11 @@
   "package": "fuzs.essentialpotions.mixin",
   "refmap": "essentialpotions.refmap.json",
   "mixins": [
+    "accessor.LivingEntityAccessor",
+    "accessor.UseOnContextAccessor"
   ],
   "client": [
+    "client.GuiMixin",
     "client.accessor.ItemRendererAccessor"
   ],
   "injectors": {
