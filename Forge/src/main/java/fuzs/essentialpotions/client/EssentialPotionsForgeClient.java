@@ -1,11 +1,13 @@
 package fuzs.essentialpotions.client;
 
 import fuzs.essentialpotions.EssentialPotions;
-import fuzs.essentialpotions.client.handler.KeyBindingHandler;
+import fuzs.essentialpotions.client.handler.CyclingInputHandler;
+import fuzs.essentialpotions.client.handler.ForwardingItemCyclingHandler;
 import fuzs.essentialpotions.client.handler.SlotRendererHandler;
 import fuzs.puzzleslib.client.core.ClientFactories;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -28,7 +30,14 @@ public class EssentialPotionsForgeClient {
         });
         MinecraftForge.EVENT_BUS.addListener((final TickEvent.ClientTickEvent evt) -> {
             if (evt.phase != TickEvent.Phase.START) return;
-            KeyBindingHandler.onClientTick$Start(Minecraft.getInstance());
+            CyclingInputHandler.onClientTick$Start(Minecraft.getInstance());
+        });
+        MinecraftForge.EVENT_BUS.addListener((final TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase != TickEvent.Phase.START) return;
+            ForwardingItemCyclingHandler.onClientTick$Start(Minecraft.getInstance());
+        });
+        MinecraftForge.EVENT_BUS.addListener((final InputEvent.MouseScrollingEvent evt) -> {
+            CyclingInputHandler.onBeforeMouseScroll(evt.isLeftDown(), evt.isMiddleDown(), evt.isRightDown(), evt.getScrollDelta(), evt.getScrollDelta()).ifPresent(unit -> evt.setCanceled(true));
         });
     }
 }

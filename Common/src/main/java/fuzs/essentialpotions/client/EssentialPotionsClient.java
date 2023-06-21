@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.core.ClientAbstractions;
 import fuzs.essentialpotions.client.gui.screens.AlchemyBagScreen;
+import fuzs.essentialpotions.client.handler.AlchemyBagCyclingProvider;
+import fuzs.essentialpotions.client.handler.SlotCyclingProvider;
 import fuzs.essentialpotions.client.init.ClientModRegistry;
 import fuzs.essentialpotions.client.renderer.block.model.ForwardingItemOverrides;
 import fuzs.essentialpotions.init.ModRegistry;
@@ -36,6 +38,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
     @Override
     public void onClientSetup(ModConstructor.ModLifecycleContext context) {
         ItemModelOverrides.INSTANCE.register(ModRegistry.ALCHEMY_BAG_ITEM.get(), ALCHEMY_BAG_ITEM_MODEL, ALCHEMY_BAG_IN_HAND_ITEM_MODEL, ItemTransforms.TransformType.GUI, ItemTransforms.TransformType.GROUND, ItemTransforms.TransformType.FIXED);
+        SlotCyclingProvider.registerProvider(ModRegistry.ALCHEMY_BAG_ITEM.get(), AlchemyBagCyclingProvider::new);
     }
 
     @Override

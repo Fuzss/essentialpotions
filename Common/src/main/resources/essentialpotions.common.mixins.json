@@ -11,7 +11,8 @@
   "client": [
     "client.GuiMixin",
     "client.accessor.ItemInHandRendererAccessor",
-    "client.accessor.ItemRendererAccessor"
+    "client.accessor.ItemRendererAccessor",
+    "client.accessor.MouseHandlerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

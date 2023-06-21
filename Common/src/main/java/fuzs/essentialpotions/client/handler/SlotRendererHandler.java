@@ -4,158 +4,40 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.config.ClientConfig;
-import fuzs.essentialpotions.init.ModRegistry;
-import fuzs.essentialpotions.network.ServerboundCyclePotionMessage;
-import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
-import fuzs.essentialpotions.world.inventory.ContainerItemHelper;
-import fuzs.essentialpotions.world.item.AlchemyBagItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 
-import java.util.Collections;
-import java.util.List;
-
 public class SlotRendererHandler {
-    public static final SlotRendererHandler INSTANCE = new SlotRendererHandler();
-    private static final List<SlotRendererHandler> SLOT_RENDERER_HANDLERS = Collections.singletonList(INSTANCE);
     private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
 
     public static void tryRenderSlots(Minecraft minecraft, PoseStack poseStack, float partialTicks, int screenWidth, int screenHeight) {
-        for (SlotRendererHandler slotRendererHandler : SLOT_RENDERER_HANDLERS) {
-            ItemStack[] items = slotRendererHandler.getRenderItems(minecraft);
-            if (items.length != 0) {
-                slotRendererHandler.render(poseStack, partialTicks, screenWidth, screenHeight, minecraft.font, (Player) minecraft.getCameraEntity(), items);
-                return;
-            }
-        }
-    }
-
-    private ItemStack[] getRenderItems(Minecraft minecraft) {
-        if (!minecraft.options.hideGui && minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR)
+        if (!minecraft.options.hideGui && minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
             if (minecraft.getCameraEntity() instanceof Player player) {
-                for (InteractionHand interactionHand : InteractionHand.values()) {
-                    ItemStack itemInHand = player.getItemInHand(interactionHand);
-                    if (this.supportsSelectedItem(itemInHand)) {
-                        ItemStack selectedStack = this.getSelectedStack(itemInHand, interactionHand, player.getInventory());
-                        ItemStack forwardStack = this.getForwardStack(itemInHand, interactionHand, player.getInventory());
-                        ItemStack backwardStack = this.getBackwardStack(itemInHand, interactionHand, player.getInventory());
-                        if (!forwardStack.isEmpty() && !backwardStack.isEmpty()) {
-                            return new ItemStack[]{backwardStack, selectedStack, forwardStack};
-                        }
+                SlotCyclingProvider provider = SlotCyclingProvider.getProvider(player);
+                if (provider != null) {
+                    ItemStack forwardStack = provider.getForwardStack();
+                    ItemStack backwardStack = provider.getBackwardStack();
+                    if (!forwardStack.isEmpty() && !backwardStack.isEmpty()) {
+                        renderAdditionalSlots(poseStack, partialTicks, screenWidth, screenHeight, minecraft.font, (Player) minecraft.getCameraEntity(), provider);
                     }
                 }
             }
-        return new ItemStack[0];
-    }
-
-    public boolean supportsSelectedItem(ItemStack stack) {
-        return stack.is(ModRegistry.ALCHEMY_BAG_ITEM.get());
-    }
-
-    public ItemStack getSelectedStack(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (stack.hasTag()) {
-            int selected = stack.getTag().getInt(AlchemyBagItem.TAG_SELECTED);
-            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, false);
-            return container.getItem(selected);
         }
-        return ItemStack.EMPTY;
     }
 
-    public ItemStack getForwardStack(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (stack.hasTag()) {
-            int selected = stack.getTag().getInt(AlchemyBagItem.TAG_SELECTED);
-            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, false);
-            for (int i = 1; i < AlchemyBagMenu.ALCHEMY_BAG_SLOTS; i++) {
-                int slot = (selected + i + AlchemyBagMenu.ALCHEMY_BAG_SLOTS) % AlchemyBagMenu.ALCHEMY_BAG_SLOTS;
-                ItemStack stackInSlot = container.getItem(slot);
-                if (!stackInSlot.isEmpty()) {
-                    return stackInSlot;
-                }
-            }
-        }
-        return ItemStack.EMPTY;
-    }
+    private static void renderAdditionalSlots(PoseStack poseStack, float partialTicks, int screenWidth, int screenHeight, Font font, Player player, SlotCyclingProvider provider) {
 
-    public ItemStack getBackwardStack(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (stack.hasTag()) {
-            int selected = stack.getTag().getInt(AlchemyBagItem.TAG_SELECTED);
-            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, false);
-            for (int i = 1; i < AlchemyBagMenu.ALCHEMY_BAG_SLOTS; i++) {
-                int slot = (selected - i + AlchemyBagMenu.ALCHEMY_BAG_SLOTS) % AlchemyBagMenu.ALCHEMY_BAG_SLOTS;
-                ItemStack stackInSlot = container.getItem(slot);
-                if (!stackInSlot.isEmpty()) {
-                    return stackInSlot;
-                }
-            }
-        }
-        return ItemStack.EMPTY;
-    }
-
-    public int getForwardSlot(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (stack.hasTag()) {
-            int selected = stack.getTag().getInt(AlchemyBagItem.TAG_SELECTED);
-            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, false);
-            for (int i = 1; i < AlchemyBagMenu.ALCHEMY_BAG_SLOTS; i++) {
-                int slot = (selected + i + AlchemyBagMenu.ALCHEMY_BAG_SLOTS) % AlchemyBagMenu.ALCHEMY_BAG_SLOTS;
-                if (!container.getItem(slot).isEmpty()) {
-                    return slot;
-                }
-            }
-        }
-        return -1;
-    }
-
-    public int getBackwardSlot(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (stack.hasTag()) {
-            int selected = stack.getTag().getInt(AlchemyBagItem.TAG_SELECTED);
-            SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null, false);
-            for (int i = 1; i < AlchemyBagMenu.ALCHEMY_BAG_SLOTS; i++) {
-                int slot = (selected - i + AlchemyBagMenu.ALCHEMY_BAG_SLOTS) % AlchemyBagMenu.ALCHEMY_BAG_SLOTS;
-                if (!container.getItem(slot).isEmpty()) {
-                    return slot;
-                }
-            }
-        }
-        return -1;
-    }
-
-    public boolean cycleSlotForward(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (!this.getForwardStack(stack, interactionHand, inventory).isEmpty()) {
-            ServerboundCyclePotionMessage.setSelectedItem(stack, interactionHand, inventory, true);
-            EssentialPotions.NETWORK.sendToServer(new ServerboundCyclePotionMessage(inventory.selected, interactionHand, true));
-            return true;
-        }
-        return false;
-    }
-
-    public boolean cycleSlotBackward(ItemStack stack, InteractionHand interactionHand, Inventory inventory) {
-        if (!this.getBackwardStack(stack, interactionHand, inventory).isEmpty()) {
-            ServerboundCyclePotionMessage.setSelectedItem(stack, interactionHand, inventory, false);
-            EssentialPotions.NETWORK.sendToServer(new ServerboundCyclePotionMessage(inventory.selected, interactionHand, false));
-            return true;
-        }
-        return false;
-    }
-
-    public int getItemPopTime(ItemStack stack) {
-        return Math.max(stack.getPopTime(), KeyBindingHandler.globalPopTime);
-    }
-
-    private void render(PoseStack poseStack, float partialTicks, int screenWidth, int screenHeight, Font font, Player player, ItemStack[] items) {
-
-        ItemStack backwardStack = items[0];
-        ItemStack forwardStack = items[2];
+        ItemStack selectedStack = provider.getSelectedStack();
+        ItemStack forwardStack = provider.getForwardStack();
+        ItemStack backwardStack = provider.getBackwardStack();
 
         if (forwardStack.isEmpty() || backwardStack.isEmpty()) return;
 
@@ -169,15 +51,17 @@ public class SlotRendererHandler {
             }
         }
 
-        int posX = screenWidth / 2 + 91 * (renderToRight ? 1 : -1);
-        int posY = screenHeight;
-        posY -= EssentialPotions.CONFIG.get(ClientConfig.class).slotsOffset;
+        int posX = screenWidth / 2 + (91 + EssentialPotions.CONFIG.get(ClientConfig.class).slotsXOffset) * (renderToRight ? 1 : -1);
+        int posY = screenHeight - EssentialPotions.CONFIG.get(ClientConfig.class).slotsYOffset;
+        if (EssentialPotions.CONFIG.get(ClientConfig.class).slotsDisplayState == ClientConfig.SlotsDisplayState.KEY) {
+            posY += (screenHeight - posY + 23) * (1.0F - Math.min(1.0F, (CyclingInputHandler.getSlotsDisplayTicks() - partialTicks) / 5.0F));
+        }
 
-        this.renderSlotBackgrounds(poseStack, posX, posY, !forwardStack.isEmpty(), !backwardStack.isEmpty(), renderToRight);
-        this.renderSlotItems(partialTicks, posX, posY - (16 + 3), font, player, items[1], forwardStack, backwardStack, renderToRight);
+        renderSlotBackgrounds(poseStack, posX, posY, !forwardStack.isEmpty(), !backwardStack.isEmpty(), renderToRight);
+        renderSlotItems(partialTicks, posX, posY - (16 + 3), font, player, selectedStack, forwardStack, backwardStack, renderToRight, provider);
     }
 
-    private void renderSlotBackgrounds(PoseStack poseStack, int posX, int posY, boolean renderForwardStack, boolean renderBackwardStack, boolean renderToRight) {
+    private static void renderSlotBackgrounds(PoseStack poseStack, int posX, int posY, boolean renderForwardStack, boolean renderBackwardStack, boolean renderToRight) {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -203,27 +87,27 @@ public class SlotRendererHandler {
         }
     }
 
-    private void renderSlotItems(float partialTicks, int posX, int posY, Font font, Player player, ItemStack selectedStack, ItemStack forwardStack, ItemStack backwardStack, boolean renderToRight) {
+    private static void renderSlotItems(float partialTicks, int posX, int posY, Font font, Player player, ItemStack selectedStack, ItemStack forwardStack, ItemStack backwardStack, boolean renderToRight, SlotCyclingProvider provider) {
 
         if (renderToRight) {
 
-            this.renderItemInSlot(font, posX + 10, posY, partialTicks, player, backwardStack);
-            this.renderItemInSlot(font, posX + 10 + 20, posY, partialTicks, player, selectedStack);
-            this.renderItemInSlot(font, posX + 10 + 20 + 20, posY, partialTicks, player, forwardStack);
+            renderItemInSlot(font, posX + 10, posY, partialTicks, player, backwardStack, provider);
+            renderItemInSlot(font, posX + 10 + 20, posY, partialTicks, player, selectedStack, provider);
+            renderItemInSlot(font, posX + 10 + 20 + 20, posY, partialTicks, player, forwardStack, provider);
         } else {
 
-            this.renderItemInSlot(font, posX - 26, posY, partialTicks, player, forwardStack);
-            this.renderItemInSlot(font, posX - 26 - 20, posY, partialTicks, player, selectedStack);
-            this.renderItemInSlot(font, posX - 26 - 20 - 20, posY, partialTicks, player, backwardStack);
+            renderItemInSlot(font, posX - 26, posY, partialTicks, player, forwardStack, provider);
+            renderItemInSlot(font, posX - 26 - 20, posY, partialTicks, player, selectedStack, provider);
+            renderItemInSlot(font, posX - 26 - 20 - 20, posY, partialTicks, player, backwardStack, provider);
         }
     }
 
-    private void renderItemInSlot(Font font, int posX, int posY, float tickDelta, Player player, ItemStack stack) {
+    private static void renderItemInSlot(Font font, int posX, int posY, float tickDelta, Player player, ItemStack stack, SlotCyclingProvider provider) {
 
         if (!stack.isEmpty()) {
 
             PoseStack posestack = RenderSystem.getModelViewStack();
-            float popTime = this.getItemPopTime(stack) - tickDelta;
+            float popTime = CyclingInputHandler.getGlobalPopTime() - tickDelta;
             if (popTime > 0.0F) {
                 float f1 = 1.0F + popTime / 5.0F;
                 posestack.pushPose();

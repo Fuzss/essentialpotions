@@ -1,7 +1,8 @@
 package fuzs.essentialpotions.client;
 
 import fuzs.essentialpotions.EssentialPotions;
-import fuzs.essentialpotions.client.handler.KeyBindingHandler;
+import fuzs.essentialpotions.client.handler.CyclingInputHandler;
+import fuzs.essentialpotions.client.handler.ForwardingItemCyclingHandler;
 import fuzs.essentialpotions.client.handler.SlotRendererHandler;
 import fuzs.puzzleslib.client.core.ClientFactories;
 import net.fabricmc.api.ClientModInitializer;
@@ -22,6 +23,7 @@ public class EssentialPotionsFabricClient implements ClientModInitializer {
             Minecraft minecraft = Minecraft.getInstance();
             SlotRendererHandler.tryRenderSlots(minecraft, matrixStack, tickDelta, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight());
         });
-        ClientTickEvents.START_CLIENT_TICK.register(KeyBindingHandler::onClientTick$Start);
+        ClientTickEvents.START_CLIENT_TICK.register(CyclingInputHandler::onClientTick$Start);
+        ClientTickEvents.START_CLIENT_TICK.register(ForwardingItemCyclingHandler::onClientTick$Start);
     }
 }
