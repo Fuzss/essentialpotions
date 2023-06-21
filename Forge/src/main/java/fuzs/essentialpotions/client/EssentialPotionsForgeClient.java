@@ -1,12 +1,14 @@
 package fuzs.essentialpotions.client;
 
 import fuzs.essentialpotions.EssentialPotions;
+import fuzs.essentialpotions.client.handler.KeyBindingHandler;
 import fuzs.essentialpotions.client.handler.SlotRendererHandler;
 import fuzs.puzzleslib.client.core.ClientFactories;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
@@ -23,6 +25,10 @@ public class EssentialPotionsForgeClient {
     private static void registerHandlers() {
         MinecraftForge.EVENT_BUS.addListener((final RenderGuiEvent.Post evt) -> {
             SlotRendererHandler.tryRenderSlots(Minecraft.getInstance(), evt.getPoseStack(), evt.getPartialTick(), evt.getWindow().getGuiScaledWidth(), evt.getWindow().getGuiScaledHeight());
+        });
+        MinecraftForge.EVENT_BUS.addListener((final TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase != TickEvent.Phase.START) return;
+            KeyBindingHandler.onClientTick$Start(Minecraft.getInstance());
         });
     }
 }

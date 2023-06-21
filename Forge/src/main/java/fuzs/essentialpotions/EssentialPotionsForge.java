@@ -4,6 +4,7 @@ import fuzs.essentialpotions.data.ModBlockStateProvider;
 import fuzs.essentialpotions.data.ModItemTagsProvider;
 import fuzs.essentialpotions.data.ModLanguageProvider;
 import fuzs.essentialpotions.data.ModRecipeProvider;
+import fuzs.essentialpotions.init.ForgeModRegistry;
 import fuzs.puzzleslib.core.CommonFactories;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -18,6 +19,7 @@ public class EssentialPotionsForge {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
+        ForgeModRegistry.touch();
         CommonFactories.INSTANCE.modConstructor(EssentialPotions.MOD_ID).accept(new EssentialPotions());
     }
 

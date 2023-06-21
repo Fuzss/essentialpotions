@@ -16,6 +16,6 @@ public class UnlimitedContainer extends SimpleContainer {
 
     @Override
     public int getMaxStackSize() {
-        return AlchemyBagItem.POTION_MAX_STACK_SIZE;
+        return super.getMaxStackSize() * AlchemyBagItem.POTION_MAX_STACK_SIZE;
     }
 }

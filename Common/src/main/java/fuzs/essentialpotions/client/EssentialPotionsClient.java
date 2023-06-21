@@ -11,6 +11,7 @@ import fuzs.essentialpotions.mixin.client.accessor.ItemRendererAccessor;
 import fuzs.essentialpotions.world.item.ForwardingItem;
 import fuzs.puzzleslib.api.client.renderer.item.v1.ItemModelOverrides;
 import fuzs.puzzleslib.client.core.ClientModConstructor;
+import fuzs.puzzleslib.core.ModConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -33,7 +34,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
     }
 
     @Override
-    public void onClientSetup() {
+    public void onClientSetup(ModConstructor.ModLifecycleContext context) {
         ItemModelOverrides.INSTANCE.register(ModRegistry.ALCHEMY_BAG_ITEM.get(), ALCHEMY_BAG_ITEM_MODEL, ALCHEMY_BAG_IN_HAND_ITEM_MODEL, ItemTransforms.TransformType.GUI, ItemTransforms.TransformType.GROUND, ItemTransforms.TransformType.FIXED);
     }
 

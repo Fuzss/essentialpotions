@@ -6,8 +6,10 @@ import fuzs.essentialpotions.mixin.accessor.UseOnContextAccessor;
 import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
 import fuzs.essentialpotions.world.inventory.ContainerItemHelper;
 import fuzs.essentialpotions.world.inventory.UnlimitedContainerUtils;
+import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.*;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,6 +20,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.Vanishable;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
@@ -29,12 +32,16 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     }
 
     public InteractionResultHolder<ItemStack> useSelf(Level level, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+        ItemStack itemInHand = player.getItemInHand(hand);
         if (!level.isClientSide) {
-            player.openMenu(this.getMenuProvider(stack));
+            player.openMenu(this.getMenuProvider(itemInHand));
             player.awardStat(Stats.ITEM_USED.get(this));
         }
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        if (this.getSelectedItem(itemInHand).isEmpty()) {
+            return InteractionResultHolder.sidedSuccess(itemInHand, level.isClientSide);
+        } else {
+            return InteractionResultHolder.consume(itemInHand);
+        }
     }
 
     private MenuProvider getMenuProvider(ItemStack stack) {
@@ -72,10 +79,105 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     }
 
     @Override
+    public void onUseTick(Level level, LivingEntity livingEntity, ItemStack stack, int remainingUseDuration) {
+        if (livingEntity instanceof Player player && this.useSelectedItem(player)) {
+            ItemStack selectedItem = this.getSelectedItem(stack);
+            if (!selectedItem.isEmpty()) {
+                selectedItem.onUseTick(level, livingEntity, remainingUseDuration);
+                this.setSelectedItem(stack, selectedItem);
+            }
+        }
+        super.onUseTick(level, livingEntity, stack, remainingUseDuration);
+    }
+
+    @Override
+    public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
+        if (this.useSelectedItem(player)) {
+            ItemStack itemInHand = player.getMainHandItem();
+            ItemStack selectedItem = this.getSelectedItem(itemInHand);
+            if (!selectedItem.isEmpty()) {
+                boolean result = selectedItem.getItem().canAttackBlock(state, level, pos, player);
+                this.setSelectedItem(itemInHand, selectedItem);
+                return result;
+            } else {
+                return true;
+            }
+        }
+        return super.canAttackBlock(state, level, pos, player);
+    }
+
+    @Override
+    public float getDestroySpeed(ItemStack stack, BlockState state) {
+        ItemStack item = this.getSelectedItem(stack);
+        return !item.isEmpty() ? item.getDestroySpeed(state) : super.getDestroySpeed(stack, state);
+    }
+
+    @Override
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        if (attacker instanceof Player player && this.useSelectedItem(player)) {
+            ItemStack selectedItem = this.getSelectedItem(stack);
+            if (!selectedItem.isEmpty()) {
+                boolean result = selectedItem.getItem().hurtEnemy(selectedItem, target, player);
+                this.setSelectedItem(stack, selectedItem);
+                return result;
+            } else {
+                return false;
+            }
+        }
+        return super.hurtEnemy(stack, target, attacker);
+    }
+
+    @Override
+    public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miningEntity) {
+        if (miningEntity instanceof Player player && this.useSelectedItem(player)) {
+            ItemStack selectedItem = this.getSelectedItem(stack);
+            if (!selectedItem.isEmpty()) {
+                boolean result = selectedItem.getItem().mineBlock(selectedItem, level, state, pos, player);
+                this.setSelectedItem(stack, selectedItem);
+                return result;
+            } else {
+                return false;
+            }
+        }
+        return super.mineBlock(stack, level, state, pos, miningEntity);
+    }
+
+    @Override
+    public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity interactionTarget, InteractionHand usedHand) {
+        if (this.useSelectedItem(player)) {
+            ItemStack selectedItem = this.getSelectedItem(stack);
+            if (!selectedItem.isEmpty()) {
+                InteractionResult result = selectedItem.interactLivingEntity(player, interactionTarget, usedHand);
+                this.setSelectedItem(stack, selectedItem);
+                return result;
+            } else {
+                return InteractionResult.PASS;
+            }
+        }
+        return super.interactLivingEntity(stack, player, interactionTarget, usedHand);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
+        ItemStack item = this.getSelectedItem(stack);
+        if (!item.isEmpty()) {
+            item.inventoryTick(level, entity, slotId, isSelected);
+        } else {
+            super.inventoryTick(stack, level, entity, slotId, isSelected);
+        }
+    }
+
+    @Override
+    public boolean useOnRelease(ItemStack stack) {
+        ItemStack item = this.getSelectedItem(stack);
+        return !item.isEmpty() ? item.useOnRelease() : super.useOnRelease(stack);
+    }
+
+    @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity livingEntity, int timeCharged) {
         if (livingEntity instanceof Player player && this.useSelectedItem(player)) {
             ItemStack selectedItem = this.getSelectedItem(stack);
-            if (selectedItem.isEmpty()) {
+            if (!selectedItem.isEmpty()) {
                 selectedItem.releaseUsing(level, player, timeCharged);
             }
         } else {
@@ -136,6 +238,8 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
                     player.getInventory().add(result.getObject());
                 }
 
+                // this would be much better the other way around, keeping the selected item as useItem,
+                // but vanilla constantly checks with the actually held item, so it needs to be this item
                 if (player.getUseItem() == result.getObject()) {
                     ((LivingEntityAccessor) player).essentialpotions$setUseItem(itemInHand);
                 }
@@ -195,21 +299,6 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
 
     @Override
     public boolean isAllowedInside(ItemStack stack) {
-        return true || stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
+        return stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
     }
-
-    //    public boolean canCyclePotions(ItemStack stack) {
-//        SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
-//        int foundItems = 0;
-//        for (int i = 0; i < container.getContainerSize(); i++) {
-//            if (!container.getItem(i).isEmpty()) foundItems++;
-//            if (foundItems > 1) return true;
-//        }
-//        return false;
-//    }
-//
-//    public void cyclePotionRight(ItemStack stack) {
-//        SimpleContainer container = ContainerItemHelper.loadItemContainer(stack, null);
-//        stack.getOrCreateTagElement()
-//    }
 }

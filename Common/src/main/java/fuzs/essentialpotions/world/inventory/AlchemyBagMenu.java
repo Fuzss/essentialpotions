@@ -28,7 +28,7 @@ public class AlchemyBagMenu extends UnlimitedContainerMenu {
 
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return true || stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
+                    return stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
                 }
             });
         }
@@ -54,6 +54,15 @@ public class AlchemyBagMenu extends UnlimitedContainerMenu {
                 }
             });
         }
+        // small trick to sync an alchemy bag held in the offhand to the client so that the slots display may update
+        // the slot added here is neither visible nor usable
+        this.addSlot(new Slot(inventory, 40, 0, 0) {
+
+            @Override
+            public boolean isActive() {
+                return false;
+            }
+        });
     }
 
     @Override

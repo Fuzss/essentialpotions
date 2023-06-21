@@ -37,7 +37,7 @@ ao:2
 prioritizeChunkUpdates:0
 biomeBlendRadius:2
 renderClouds:"true"
-resourcePacks:["vanilla","Fabric Mods"]
+resourcePacks:["vanilla"]
 incompatibleResourcePacks:[]
 lastServer:
 lang:en_us
@@ -113,7 +113,6 @@ key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
 key_key.cycleLeft:key.keyboard.g
 key_key.cycleRight:key.keyboard.h
-key_key.modmenu.open_menu:key.keyboard.unknown
 soundCategory_master:0.102649
 soundCategory_music:0.0
 soundCategory_record:1.0

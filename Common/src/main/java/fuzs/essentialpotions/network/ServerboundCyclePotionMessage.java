@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public record ServerboundCyclePotionMessage(int selectedItem, InteractionHand interactionHand, boolean forward) implements ServerboundMessage<ServerboundCyclePotionMessage> {
 
@@ -22,22 +23,22 @@ public record ServerboundCyclePotionMessage(int selectedItem, InteractionHand in
 
             @Override
             public void handle(ServerboundCyclePotionMessage message, MinecraftServer server, ServerGamePacketListenerImpl handler, ServerPlayer player, ServerLevel level) {
-                setSelectedItem(player, ServerboundCyclePotionMessage.this.interactionHand(), ServerboundCyclePotionMessage.this.forward());
+                ItemStack itemInHand = player.getItemInHand(ServerboundCyclePotionMessage.this.interactionHand());
+                if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
+                    setSelectedItem(itemInHand, ServerboundCyclePotionMessage.this.interactionHand(), player.getInventory(), ServerboundCyclePotionMessage.this.forward());
+                }
             }
         };
     }
 
-    public static void setSelectedItem(Player player, InteractionHand interactionHand, boolean forward) {
-        ItemStack itemInHand = player.getItemInHand(interactionHand);
-        if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
-            int slot;
-            if (forward) {
-                slot = SlotRendererHandler.INSTANCE.getForwardSlot(player.getInventory());
-            } else {
-                slot = SlotRendererHandler.INSTANCE.getBackwardSlot(player.getInventory());
-            }
-            itemInHand.getTag().putInt(AlchemyBagItem.TAG_SELECTED, slot);
-            player.stopUsingItem();
+    public static void setSelectedItem(ItemStack itemInHand, InteractionHand interactionHand, Inventory inventory, boolean forward) {
+        int slot;
+        if (forward) {
+            slot = SlotRendererHandler.INSTANCE.getForwardSlot(itemInHand, interactionHand, inventory);
+        } else {
+            slot = SlotRendererHandler.INSTANCE.getBackwardSlot(itemInHand, interactionHand, inventory);
         }
+        itemInHand.getTag().putInt(AlchemyBagItem.TAG_SELECTED, slot);
+        inventory.player.stopUsingItem();
     }
 }

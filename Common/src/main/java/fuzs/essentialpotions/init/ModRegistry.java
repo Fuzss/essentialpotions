@@ -17,8 +17,8 @@ import net.minecraft.world.item.Items;
 
 public class ModRegistry {
     public static final CreativeModeTab CREATIVE_MODE_TAB = CommonAbstractions.INSTANCE.creativeModeTabBuilder(EssentialPotions.MOD_ID).setIcon(() -> new ItemStack(Items.POTION)).appendAllPotions().build();
-    private static final RegistryManager REGISTRY = CommonFactories.INSTANCE.registration(EssentialPotions.MOD_ID);
-    public static final RegistryReference<Item> ALCHEMY_BAG_ITEM = REGISTRY.registerItem("alchemy_bag", () -> new AlchemyBagItem(new Item.Properties().tab(CREATIVE_MODE_TAB).stacksTo(1)));
+    static final RegistryManager REGISTRY = CommonFactories.INSTANCE.registration(EssentialPotions.MOD_ID);
+    public static final RegistryReference<Item> ALCHEMY_BAG_ITEM = REGISTRY.placeholder(Registry.ITEM_REGISTRY, "alchemy_bag");
     public static final RegistryReference<MenuType<AlchemyBagMenu>> ALCHEMY_BAG_MENU_TYPE = REGISTRY.registerMenuTypeSupplier("alchemy_bag", () -> AlchemyBagMenu::new);
 
     public static final TagKey<Item> DRINKABLE_POTIONS_ITEM_TAG = TagKey.create(Registry.ITEM_REGISTRY, EssentialPotions.id("drinkable_potions"));

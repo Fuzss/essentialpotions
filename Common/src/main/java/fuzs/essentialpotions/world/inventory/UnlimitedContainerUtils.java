@@ -97,12 +97,12 @@ public class UnlimitedContainerUtils {
     }
 
     public static boolean canIncreaseStackSize(ItemStack stack) {
-        return stack.getMaxStackSize() > 1 || !stack.isDamageableItem() || !stack.isDamaged();
+        return stack.getMaxStackSize() > 1 || !stack.isDamageableItem();
     }
 
     public static OptionalInt getMaxStackSize(ItemStack stack) {
         if (canIncreaseStackSize(stack)) {
-            return OptionalInt.of(AlchemyBagItem.POTION_MAX_STACK_SIZE);
+            return OptionalInt.of(stack.getMaxStackSize() * AlchemyBagItem.POTION_MAX_STACK_SIZE);
         }
         return OptionalInt.empty();
     }

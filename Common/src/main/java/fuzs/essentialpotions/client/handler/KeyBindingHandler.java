@@ -3,9 +3,10 @@ package fuzs.essentialpotions.client.handler;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.init.ClientModRegistry;
 import fuzs.essentialpotions.config.ClientConfig;
-import fuzs.essentialpotions.init.ModRegistry;
+import fuzs.essentialpotions.mixin.client.accessor.ItemInHandRendererAccessor;
 import fuzs.essentialpotions.world.item.AlchemyBagItem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -18,34 +19,49 @@ public class KeyBindingHandler {
     public static ItemStack lastToolHighlight = ItemStack.EMPTY;
 
     public static void onClientTick$Start(Minecraft minecraft) {
+        if (minecraft.player == null) return;
         if (cycleSlotsDisplay > 0) cycleSlotsDisplay--;
         if (globalPopTime > 0) globalPopTime--;
         if (toolHighlightTimer > 0) {
             toolHighlightTimer--;
+            boolean clearLastToolHighlight = true;
             for (InteractionHand interactionHand : InteractionHand.values()) {
                 ItemStack itemInHand = minecraft.player.getItemInHand(interactionHand);
-                if (itemInHand.is(ModRegistry.ALCHEMY_BAG_ITEM.get())) {
-                    lastToolHighlight = ((AlchemyBagItem) itemInHand.getItem()).getSelectedItem(itemInHand);
-                    break;
-                } else {
-                    lastToolHighlight = ItemStack.EMPTY;
+                if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
+                    clearLastToolHighlight = false;
                 }
             }
+            if (clearLastToolHighlight) lastToolHighlight = ItemStack.EMPTY;
         }
         if (minecraft.getOverlay() == null && (minecraft.screen == null || minecraft.screen.passEvents)) {
-            handleKeybinds(minecraft.player);
+            handleKeybinds(minecraft, minecraft.player);
         }
     }
 
-    private static void handleKeybinds(Player player) {
+    private static void setLastToolHighlight(Minecraft minecraft, ItemStack itemInHand, InteractionHand interactionHand) {
+        globalPopTime = 5;
+        toolHighlightTimer = 40;
+        lastToolHighlight = ((AlchemyBagItem) itemInHand.getItem()).getSelectedItem(itemInHand);
+        clearItemInHand(minecraft, interactionHand);
+    }
+
+    private static void clearItemInHand(Minecraft minecraft, InteractionHand interactionHand) {
+        ItemInHandRenderer itemInHandRenderer = minecraft.gameRenderer.itemInHandRenderer;
+        if (interactionHand == InteractionHand.OFF_HAND) {
+            ((ItemInHandRendererAccessor) itemInHandRenderer).essentialpotions$setOffHandItem(ItemStack.EMPTY);
+        } else {
+            ((ItemInHandRendererAccessor) itemInHandRenderer).essentialpotions$setMainHandItem(ItemStack.EMPTY);
+        }
+    }
+
+    private static void handleKeybinds(Minecraft minecraft, Player player) {
         if (!player.isSpectator()) {
             while (ClientModRegistry.CYCLE_LEFT_KEY_MAPPING.consumeClick()) {
                 for (InteractionHand interactionHand : InteractionHand.values()) {
                     ItemStack itemInHand = player.getItemInHand(interactionHand);
                     if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
-                        if (SlotRendererHandler.INSTANCE.cycleSlotBackward(player.getInventory(), interactionHand)) {
-                            globalPopTime = 5;
-                            toolHighlightTimer = 40;
+                        if (SlotRendererHandler.INSTANCE.cycleSlotBackward(itemInHand, interactionHand, player.getInventory())) {
+                            setLastToolHighlight(minecraft, itemInHand, interactionHand);
                             break;
                         }
                     }
@@ -55,9 +71,8 @@ public class KeyBindingHandler {
                 for (InteractionHand interactionHand : InteractionHand.values()) {
                     ItemStack itemInHand = player.getItemInHand(interactionHand);
                     if (SlotRendererHandler.INSTANCE.supportsSelectedItem(itemInHand)) {
-                        if (SlotRendererHandler.INSTANCE.cycleSlotForward(player.getInventory(), interactionHand)) {
-                            globalPopTime = 5;
-                            toolHighlightTimer = 40;
+                        if (SlotRendererHandler.INSTANCE.cycleSlotForward(itemInHand, interactionHand, player.getInventory())) {
+                            setLastToolHighlight(minecraft, itemInHand, interactionHand);
                             break;
                         }
                     }
