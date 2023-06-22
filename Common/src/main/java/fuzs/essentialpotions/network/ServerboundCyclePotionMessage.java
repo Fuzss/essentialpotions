@@ -1,7 +1,7 @@
 package fuzs.essentialpotions.network;
 
 import fuzs.essentialpotions.helper.AlchemyBagHelper;
-import fuzs.essentialpotions.world.item.AlchemyBagItem;
+import fuzs.essentialpotions.world.item.ForwardingItem;
 import fuzs.puzzleslib.api.networking.v3.ServerMessageListener;
 import fuzs.puzzleslib.api.networking.v3.ServerboundMessage;
 import net.minecraft.server.MinecraftServer;
@@ -22,7 +22,7 @@ public record ServerboundCyclePotionMessage(InteractionHand interactionHand, int
                 ItemStack itemInHand = player.getItemInHand(message.interactionHand());
                 int slot = message.forward() ? AlchemyBagHelper.getForwardSlot(itemInHand) : AlchemyBagHelper.getBackwardSlot(itemInHand);
                 if (slot == message.slot()) {
-                    itemInHand.getTag().putInt(AlchemyBagItem.TAG_SELECTED, slot);
+                    itemInHand.getTag().putInt(ForwardingItem.TAG_SELECTED, slot);
                     player.stopUsingItem();
                 }
             }

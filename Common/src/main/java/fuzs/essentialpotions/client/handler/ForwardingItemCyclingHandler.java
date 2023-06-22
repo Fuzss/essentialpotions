@@ -1,5 +1,7 @@
 package fuzs.essentialpotions.client.handler;
 
+import fuzs.essentialpotions.client.cycling.ForwardingCyclingProvider;
+import fuzs.essentialpotions.client.cycling.SlotCyclingProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 
@@ -11,7 +13,7 @@ public class ForwardingItemCyclingHandler {
         if (minecraft.player != null && !minecraft.player.isSpectator()) {
             if (toolHighlightTimer > 0) {
                 toolHighlightTimer--;
-                if (SlotCyclingProvider.getProvider(minecraft.player) == null) {
+                if (!(SlotCyclingProvider.getProvider(minecraft.player) instanceof ForwardingCyclingProvider)) {
                     lastToolHighlight = ItemStack.EMPTY;
                 }
             }

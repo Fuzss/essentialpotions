@@ -1,11 +1,14 @@
 package fuzs.essentialpotions.client.handler;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import fuzs.essentialpotions.EssentialPotions;
-import fuzs.essentialpotions.client.init.ClientModRegistry;
+import fuzs.essentialpotions.client.cycling.ItemCyclingProvider;
+import fuzs.essentialpotions.client.cycling.SlotCyclingProvider;
 import fuzs.essentialpotions.config.ClientConfig;
 import fuzs.essentialpotions.config.ModifierKey;
 import fuzs.essentialpotions.mixin.client.accessor.ItemInHandRendererAccessor;
 import fuzs.essentialpotions.mixin.client.accessor.MouseHandlerAccessor;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -18,6 +21,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CyclingInputHandler {
+    public static final KeyMapping CYCLE_LEFT_KEY_MAPPING = new KeyMapping("key.cycleLeft", InputConstants.KEY_G, "key.categories.inventory");
+    public static final KeyMapping CYCLE_RIGHT_KEY_MAPPING = new KeyMapping("key.cycleRight", InputConstants.KEY_H, "key.categories.inventory");
     private static final int DEFAULT_SLOTS_DISPLAY_TICKS = 15;
 
     private static int slotsDisplayTicks;
@@ -53,10 +58,10 @@ public class CyclingInputHandler {
     }
 
     private static void handleModKeybinds(Minecraft minecraft, Player player) {
-        while (ClientModRegistry.CYCLE_LEFT_KEY_MAPPING.consumeClick()) {
+        while (CYCLE_LEFT_KEY_MAPPING.consumeClick()) {
             cycleSlot(minecraft, player, SlotCyclingProvider::cycleSlotBackward);
         }
-        while (ClientModRegistry.CYCLE_RIGHT_KEY_MAPPING.consumeClick()) {
+        while (CYCLE_RIGHT_KEY_MAPPING.consumeClick()) {
             cycleSlot(minecraft, player, SlotCyclingProvider::cycleSlotForward);
         }
     }
@@ -78,15 +83,18 @@ public class CyclingInputHandler {
 
     private static void cycleSlot(Minecraft minecraft, Player player, Predicate<SlotCyclingProvider> cycleAction) {
         SlotCyclingProvider provider = SlotCyclingProvider.getProvider(player);
-        if (provider != null && cycleAction.test(provider) && provider instanceof ItemCyclingProvider itemProvider) {
+        if (provider != null && cycleAction.test(provider)) {
             slotsDisplayTicks = DEFAULT_SLOTS_DISPLAY_TICKS;
             globalPopTime = 5;
-            clearItemRendererInHand(minecraft, itemProvider.interactionHand());
             player.stopUsingItem();
+            if (provider instanceof ItemCyclingProvider itemProvider) {
+                clearItemRendererInHand(minecraft, itemProvider.interactionHand());
+            }
         }
     }
 
     private static void clearItemRendererInHand(Minecraft minecraft, InteractionHand interactionHand) {
+        // force the reequip animation for the new held item
         ItemInHandRenderer itemInHandRenderer = minecraft.gameRenderer.itemInHandRenderer;
         if (interactionHand == InteractionHand.OFF_HAND) {
             ((ItemInHandRendererAccessor) itemInHandRenderer).essentialpotions$setOffHandItem(ItemStack.EMPTY);

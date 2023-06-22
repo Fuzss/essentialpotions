@@ -1,7 +1,6 @@
-package fuzs.essentialpotions.client.handler;
+package fuzs.essentialpotions.client.cycling;
 
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public interface ItemCyclingProvider extends SlotCyclingProvider {

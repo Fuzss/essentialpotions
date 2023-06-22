@@ -25,7 +25,6 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     public static final int POTION_MAX_STACK_SIZE = 16;
-    public static final String TAG_SELECTED = "Selected";
 
     public AlchemyBagItem(Properties properties) {
         super(properties);

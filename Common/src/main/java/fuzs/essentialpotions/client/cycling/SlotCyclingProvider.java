@@ -1,25 +1,26 @@
-package fuzs.essentialpotions.client.handler;
+package fuzs.essentialpotions.client.cycling;
 
 import com.google.common.collect.Maps;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public interface SlotCyclingProvider {
-    List<SlotCyclingProvider> GLOBAL_PROVIDERS = Lists.newArrayList();
+    SlotCyclingProvider.Factory[] GLOBAL_PROVIDER = new SlotCyclingProvider.Factory[1];
     Map<Item, ItemCyclingProvider.Factory> ITEM_PROVIDERS = Maps.newIdentityHashMap();
 
-    static void registerProvider(SlotCyclingProvider provider) {
-        GLOBAL_PROVIDERS.add(provider);
+    static void registerProvider(@Nullable SlotCyclingProvider.Factory factory) {
+        GLOBAL_PROVIDER[0] = factory;
     }
 
     static void registerProvider(Item item, ItemCyclingProvider.Factory factory) {
+        Objects.requireNonNull(item, "item is null");
+        Objects.requireNonNull(factory, "factory is null");
         if (ITEM_PROVIDERS.put(item, factory) != null) {
             throw new IllegalStateException("Duplicate item cycling provider for item " + item);
         }
@@ -35,7 +36,7 @@ public interface SlotCyclingProvider {
                 }
             }
         }
-        return !GLOBAL_PROVIDERS.isEmpty() ? GLOBAL_PROVIDERS.get(0) : null;
+        return GLOBAL_PROVIDER[0] != null ? GLOBAL_PROVIDER[0].apply(player) : null;
     }
 
     @Nullable
@@ -46,7 +47,7 @@ public interface SlotCyclingProvider {
                 return entry.getValue().apply(itemInHand, interactionHand);
             }
         }
-        return !GLOBAL_PROVIDERS.isEmpty() ? GLOBAL_PROVIDERS.get(0) : null;
+        return GLOBAL_PROVIDER[0] != null ? GLOBAL_PROVIDER[0].apply(player) : null;
     }
 
     ItemStack getSelectedStack();
@@ -62,4 +63,9 @@ public interface SlotCyclingProvider {
     boolean cycleSlotForward();
 
     boolean cycleSlotBackward();
+
+    interface Factory {
+
+        SlotCyclingProvider apply(Player player);
+    }
 }

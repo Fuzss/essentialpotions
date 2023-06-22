@@ -3,7 +3,7 @@ package fuzs.essentialpotions.client;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.client.handler.CyclingInputHandler;
 import fuzs.essentialpotions.client.handler.ForwardingItemCyclingHandler;
-import fuzs.essentialpotions.client.handler.SlotRendererHandler;
+import fuzs.essentialpotions.client.handler.SlotsRendererHandler;
 import fuzs.puzzleslib.client.core.ClientFactories;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,7 +26,7 @@ public class EssentialPotionsForgeClient {
 
     private static void registerHandlers() {
         MinecraftForge.EVENT_BUS.addListener((final RenderGuiEvent.Post evt) -> {
-            SlotRendererHandler.tryRenderSlots(Minecraft.getInstance(), evt.getPoseStack(), evt.getPartialTick(), evt.getWindow().getGuiScaledWidth(), evt.getWindow().getGuiScaledHeight());
+            SlotsRendererHandler.tryRenderSlots(Minecraft.getInstance(), evt.getPoseStack(), evt.getPartialTick(), evt.getWindow().getGuiScaledWidth(), evt.getWindow().getGuiScaledHeight());
         });
         MinecraftForge.EVENT_BUS.addListener((final TickEvent.ClientTickEvent evt) -> {
             if (evt.phase != TickEvent.Phase.START) return;
