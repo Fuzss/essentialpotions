@@ -72,7 +72,7 @@ public class CyclingInputHandler {
         boolean loadHotbarActivatorDown = options.keyLoadHotbarActivator.isDown();
         if (!player.isCreative() || !loadHotbarActivatorDown && !saveHotbarActivatorDown) {
             ModifierKey scrollingModifierKey = EssentialPotions.CONFIG.get(ClientConfig.class).scrollingModifierKey;
-            boolean forward = scrollingModifierKey.isKey() && scrollingModifierKey.isActive();
+            boolean forward = !scrollingModifierKey.isKey() || !scrollingModifierKey.isActive();
             for (int i = 0; i < options.keyHotbarSlots.length; i++) {
                 while (i == player.getInventory().selected && options.keyHotbarSlots[i].consumeClick()) {
                     cycleSlot(minecraft, player, forward ? SlotCyclingProvider::cycleSlotForward : SlotCyclingProvider::cycleSlotBackward);
