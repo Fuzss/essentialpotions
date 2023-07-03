@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "fuzs.essentialpotions.mixin",
+  "refmap": "essentialpotions.refmap.json",
+  "plugin": "fuzs.essentialpotions.mixin.ModMixinConfigPlugin",
+  "mixins": [
+    "accessor.LivingEntityAccessor",
+    "accessor.UseOnContextAccessor"
+  ],
+  "client": [
+    "client.GuiMixin",
+    "client.accessor.ItemRendererAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
