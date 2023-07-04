@@ -15,11 +15,12 @@ import net.minecraft.world.item.ItemStack;
 public class AlchemyBagMenu extends LimitlessContainerMenu {
     public static final int ALCHEMY_BAG_SLOTS = 9;
     public static final int HOTBAR_SLOTS_START = ALCHEMY_BAG_SLOTS + 27;
+    public static final int POTION_STACK_SIZE_MULTIPLIER = 16;
 
     private final Container container;
 
     public AlchemyBagMenu(int containerId, Inventory inventory) {
-        this(containerId, inventory, new MultipliedSimpleContainer(AlchemyBagItem.POTION_STACK_SIZE_MULTIPLIER, ALCHEMY_BAG_SLOTS));
+        this(containerId, inventory, new MultipliedSimpleContainer(POTION_STACK_SIZE_MULTIPLIER, ALCHEMY_BAG_SLOTS));
     }
 
     public AlchemyBagMenu(int containerId, Inventory inventory, MultipliedContainer container) {

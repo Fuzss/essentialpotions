@@ -1,6 +1,5 @@
 package fuzs.essentialpotions.world.item;
 
-import fuzs.essentialpotions.init.ModRegistry;
 import fuzs.essentialpotions.mixin.accessor.LivingEntityAccessor;
 import fuzs.essentialpotions.mixin.accessor.UseOnContextAccessor;
 import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
@@ -30,7 +29,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import java.util.Objects;
 
 public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
-    public static final int POTION_STACK_SIZE_MULTIPLIER = 16;
 
     public AlchemyBagItem(Properties properties) {
         super(properties);
@@ -277,12 +275,6 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) {
-        ItemStack item = this.getSelectedItem(stack);
-        return !item.isEmpty() ? item.hasFoil() : super.isFoil(stack);
-    }
-
-    @Override
     public ItemStack getSelectedItem(ItemStack stack) {
         if (stack.hasTag()) {
             ItemContainerProvider provider = ContainerItemHelper.INSTANCE.getItemContainerProvider(stack);
@@ -295,23 +287,15 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
 
     @Override
     public boolean setSelectedItem(ItemStack stack, ItemStack selectedItem) {
-        if (this.isAllowedInside(selectedItem) && stack.hasTag()) {
+        if (stack.hasTag()) {
             ItemContainerProvider provider = ContainerItemHelper.INSTANCE.getItemContainerProvider(stack);
             Objects.requireNonNull(provider, "provider is null");
-            SimpleContainer container = provider.getItemContainer(stack, null, true);
-            container.setItem(stack.getTag().getInt(TAG_SELECTED), selectedItem);
-            return true;
+            if (provider.isItemAllowedInContainer(stack, selectedItem)) {
+                SimpleContainer container = provider.getItemContainer(stack, null, true);
+                container.setItem(stack.getTag().getInt(TAG_SELECTED), selectedItem);
+                return true;
+            }
         }
         return false;
-    }
-
-    @Override
-    public boolean isFoilSelf(ItemStack stack) {
-        return super.isFoil(stack);
-    }
-
-    @Override
-    public boolean isAllowedInside(ItemStack stack) {
-        return stack.is(ModRegistry.DRINKABLE_POTIONS_ITEM_TAG);
     }
 }
