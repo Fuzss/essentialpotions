@@ -9,14 +9,9 @@ dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.fabric
 
-    // Puzzles Access Api
-    modApi(libs.puzzlesaccessapi.fabric) {
-        transitive = false
-    }
-
     // Puzzles Api
     modApi(include(libs.puzzlesapi.fabric.get())) {
-        transitive = false
+        exclude group: "fuzs.puzzleslib"
     }
 
     // Cardinal Components
