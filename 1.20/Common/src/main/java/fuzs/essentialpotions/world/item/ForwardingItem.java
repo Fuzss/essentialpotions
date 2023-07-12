@@ -7,5 +7,5 @@ public interface ForwardingItem {
 
     ItemStack getSelectedItem(ItemStack stack);
 
-    boolean setSelectedItem(ItemStack stack, ItemStack selectedItem);
+    void setSelectedItem(ItemStack stack, ItemStack selectedItem);
 }

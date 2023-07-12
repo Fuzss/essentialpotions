@@ -21,6 +21,8 @@ import net.minecraft.world.item.ItemStack;
 public class AlchemyBagItemRenderer implements DynamicBuiltinItemRenderer {
     public static final ModelResourceLocation ALCHEMY_BAG_ITEM_MODEL = new ModelResourceLocation(EssentialPotions.id("alchemy_bag_model"), "inventory");
 
+    private static boolean leftHand;
+
     private ItemRenderer itemRenderer;
     private BakedModel alchemyBagModel;
 
@@ -32,7 +34,7 @@ public class AlchemyBagItemRenderer implements DynamicBuiltinItemRenderer {
     }
 
     @Override
-    public void renderByItem(ItemStack stack, ItemDisplayContext mode, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
+    public void renderByItem(ItemStack stack, ItemDisplayContext mode, PoseStack poseStack, MultiBufferSource vertexConsumers, int light, int overlay) {
         ItemStack stackToRender = this.getStackToRender(stack, mode);
         BakedModel bakedModel;
         if (stack != stackToRender) {
@@ -40,9 +42,13 @@ public class AlchemyBagItemRenderer implements DynamicBuiltinItemRenderer {
         } else {
             bakedModel = this.alchemyBagModel;
         }
+        poseStack.translate(0.5F, 0.5F, 0.5F);
+        bakedModel.getTransforms().getTransform(mode).apply(leftHand, poseStack);
+        leftHand = false;
+        poseStack.translate(-0.5F, -0.5F, -0.5F);
         RenderType renderType = ItemBlockRenderTypes.getRenderType(stackToRender, false);
         VertexConsumer vertexConsumer = ItemRenderer.getFoilBuffer(vertexConsumers, renderType, true, stackToRender.hasFoil());
-        ((ItemRendererAccessor) this.itemRenderer).essentialpotions$callRenderModelLists(bakedModel, stackToRender, light, overlay, matrices, vertexConsumer);
+        ((ItemRendererAccessor) this.itemRenderer).essentialpotions$callRenderModelLists(bakedModel, stackToRender, light, overlay, poseStack, vertexConsumer);
     }
 
     private ItemStack getStackToRender(ItemStack stack, ItemDisplayContext mode) {
@@ -53,5 +59,9 @@ public class AlchemyBagItemRenderer implements DynamicBuiltinItemRenderer {
             }
         }
         return stack;
+    }
+
+    public static void setLeftHand(boolean leftHand) {
+        AlchemyBagItemRenderer.leftHand = leftHand;
     }
 }

@@ -286,16 +286,14 @@ public class AlchemyBagItem extends Item implements ForwardingItem, Vanishable {
     }
 
     @Override
-    public boolean setSelectedItem(ItemStack stack, ItemStack selectedItem) {
+    public void setSelectedItem(ItemStack stack, ItemStack selectedItem) {
         if (stack.hasTag()) {
             ItemContainerProvider provider = ContainerItemHelper.INSTANCE.getItemContainerProvider(stack);
             Objects.requireNonNull(provider, "provider is null");
             if (provider.isItemAllowedInContainer(stack, selectedItem)) {
                 SimpleContainer container = provider.getItemContainer(stack, null, true);
                 container.setItem(stack.getTag().getInt(TAG_SELECTED), selectedItem);
-                return true;
             }
         }
-        return false;
     }
 }

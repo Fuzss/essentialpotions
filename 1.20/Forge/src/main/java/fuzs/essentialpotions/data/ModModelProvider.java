@@ -20,36 +20,7 @@ public class ModModelProvider extends AbstractModelProvider {
     @Override
     protected void registerStatesAndModels() {
         this.basicItem(this.modLoc("alchemy_bag_model"), ModRegistry.ALCHEMY_BAG_ITEM.get());
-        this.builtInItem(ModRegistry.ALCHEMY_BAG_ITEM.get())
-                // builtin/generated transformations
-                .guiLight(BlockModel.GuiLight.FRONT)
-                .transforms()
-                .transform(ItemDisplayContext.GROUND)
-                .rotation(0, 0, 0)
-                .translation(0, 2, 0)
-                .scale(0.5F, 0.5F, 0.5F)
-                .end()
-                .transform(ItemDisplayContext.HEAD)
-                .rotation(0, 180, 0)
-                .translation(0, 13, 7)
-                .scale(1, 1, 1)
-                .end()
-                .transform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)
-                .rotation(0, 0, 0)
-                .translation(0, 3.0F, 1.0F)
-                .scale(0.55F, 0.55F, 0.55F)
-                .end()
-                .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-                .rotation(0, -90, 25)
-                .translation(1.13F, 3.2F, 1.13F)
-                .scale(0.68F, 0.68F, 0.68F)
-                .end()
-                .transform(ItemDisplayContext.FIXED)
-                .rotation(0, 180, 0)
-                .translation(0, 0, 0)
-                .scale(1.0F, 1.0F, 1.0F)
-                .end()
-                .end();
+        this.builtInItem(ModRegistry.ALCHEMY_BAG_ITEM.get()).guiLight(BlockModel.GuiLight.FRONT);
     }
 
     public ItemModelBuilder builtInItem(Item item) {

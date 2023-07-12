@@ -3,9 +3,9 @@ package fuzs.essentialpotions.world.item;
 import com.google.gson.JsonObject;
 import fuzs.essentialpotions.init.ModRegistry;
 import fuzs.essentialpotions.world.inventory.AlchemyBagMenu;
-import fuzs.essentialpotions.world.inventory.LimitlessSimpleSlotContainer;
 import fuzs.puzzlesapi.api.iteminteractions.v1.ContainerItemHelper;
 import fuzs.puzzlesapi.api.iteminteractions.v1.provider.SimpleItemProvider;
+import fuzs.puzzlesapi.api.limitlesscontainers.v1.MultipliedSimpleSlotContainer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -19,7 +19,7 @@ public class AlchemyBagProvider extends SimpleItemProvider {
 
     @Override
     public SimpleContainer getItemContainer(ItemStack containerStack, Player player, boolean allowSaving) {
-        return ContainerItemHelper.INSTANCE.loadItemContainer(containerStack, this, items -> new LimitlessSimpleSlotContainer(AlchemyBagMenu.POTION_STACK_SIZE_MULTIPLIER, this.getInventorySize()), allowSaving, this.getNbtKey());
+        return ContainerItemHelper.INSTANCE.loadItemContainer(containerStack, this, items -> new MultipliedSimpleSlotContainer(AlchemyBagMenu.POTION_STACK_SIZE_MULTIPLIER, this.getInventorySize()), allowSaving, this.getNbtKey());
     }
 
     @Override
