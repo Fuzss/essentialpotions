@@ -10,6 +10,7 @@
     "accessor.UseOnContextAccessor"
   ],
   "client": [
+    "client.GameRendererMixin",
     "client.GuiMixin",
     "client.ItemRendererMixin",
     "client.accessor.ItemRendererAccessor"
