@@ -16,5 +16,7 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
         this.addCreativeModeTab(EssentialPotions.MOD_NAME);
         this.add(ModRegistry.ALCHEMY_BAG_ITEM.get(), "Alchemy Bag");
         this.add("container.alchemy_bag", "Alchemy Bag");
+        this.add(ModRegistry.PERPLEXITY_MOB_EFFECT.get(), "Perplexity");
+        this.add(ModRegistry.PERPLEXITY_POTION.get(), "Perplexity");
     }
 }

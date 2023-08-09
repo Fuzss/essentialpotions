@@ -5,10 +5,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.essentialpotions.EssentialPotions;
 import fuzs.essentialpotions.config.ServerConfig;
 import fuzs.essentialpotions.handler.VanillaEffectsHandler;
+import fuzs.essentialpotions.init.ModRegistry;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
 import fuzs.puzzleslib.api.event.v1.data.MutableValue;
 import net.minecraft.client.Camera;
+import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -58,5 +60,18 @@ public class VanillaEffectsClientHandler {
 
     private static boolean applyFireResistanceEffects(Player player) {
         return player.isCreative() || !player.isSpectator() && player.hasEffect(MobEffects.FIRE_RESISTANCE);
+    }
+
+    public static void onMovementInputUpdate(LocalPlayer player, Input input) {
+        if (player.hasEffect(ModRegistry.PERPLEXITY_MOB_EFFECT.get())) {
+            boolean right = input.right;
+            input.right = input.left;
+            input.left = right;
+            boolean up = input.up;
+            input.up = input.down;
+            input.down = up;
+            input.forwardImpulse *= -1.0F;
+            input.leftImpulse *= -1.0F;
+        }
     }
 }

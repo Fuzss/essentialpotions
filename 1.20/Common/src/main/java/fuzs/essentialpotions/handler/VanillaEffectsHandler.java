@@ -1,7 +1,9 @@
 package fuzs.essentialpotions.handler;
 
 import fuzs.essentialpotions.EssentialPotions;
+import fuzs.essentialpotions.capability.EssentialPotionsCapability;
 import fuzs.essentialpotions.config.ServerConfig;
+import fuzs.essentialpotions.init.ModRegistry;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.puzzleslib.api.event.v1.data.MutableDouble;
 import net.minecraft.util.Mth;
@@ -13,11 +15,16 @@ import org.jetbrains.annotations.Nullable;
 
 public class VanillaEffectsHandler {
 
-    public static EventResult onLivingTick(LivingEntity entity) {
+    public static EventResult onLivingTick$0(LivingEntity entity) {
         if (!EssentialPotions.CONFIG.get(ServerConfig.class).betterFireResistanceVision) return EventResult.PASS;
         if (entity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             entity.setRemainingFireTicks(Math.min(1, entity.getRemainingFireTicks()));
         }
+        return EventResult.PASS;
+    }
+
+    public static EventResult onLivingTick$1(LivingEntity entity) {
+        if (entity.tickCount > 1) ModRegistry.ESSENTIAL_POTIONS_CAPABILITY.maybeGet(entity).ifPresent(EssentialPotionsCapability::tryLoadHealth);
         return EventResult.PASS;
     }
 

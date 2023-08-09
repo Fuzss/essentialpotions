@@ -1,5 +1,10 @@
 {
   "container.alchemy_bag": "Alchemy Bag",
+  "effect.essentialpotions.perplexity": "Perplexity",
   "item.essentialpotions.alchemy_bag": "Alchemy Bag",
+  "item.minecraft.lingering_potion.effect.perplexity": "Lingering Potion of Perplexity",
+  "item.minecraft.potion.effect.perplexity": "Potion of Perplexity",
+  "item.minecraft.splash_potion.effect.perplexity": "Splash Potion of Perplexity",
+  "item.minecraft.tipped_arrow.effect.perplexity": "Arrow of Perplexity",
   "itemGroup.essentialpotions.main": "Essential Potions"
 }

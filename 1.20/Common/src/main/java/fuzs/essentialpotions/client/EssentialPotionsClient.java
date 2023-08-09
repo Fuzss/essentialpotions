@@ -12,6 +12,7 @@ import fuzs.puzzleslib.api.client.core.v1.context.AdditionalModelsContext;
 import fuzs.puzzleslib.api.client.core.v1.context.BuiltinModelItemRendererContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
 import fuzs.puzzleslib.api.client.event.v1.FogEvents;
+import fuzs.puzzleslib.api.client.event.v1.MovementInputUpdateCallback;
 import fuzs.puzzleslib.api.client.event.v1.RenderBlockOverlayCallback;
 import net.minecraft.client.gui.screens.MenuScreens;
 
@@ -27,6 +28,7 @@ public class EssentialPotionsClient implements ClientModConstructor {
         FogEvents.RENDER.register(VanillaEffectsClientHandler::onRenderFog$1);
         FogEvents.RENDER.register(VanillaEffectsClientHandler::onRenderFog$2);
         RenderBlockOverlayCallback.EVENT.register(VanillaEffectsClientHandler::onRenderBlockOverlay);
+        MovementInputUpdateCallback.EVENT.register(VanillaEffectsClientHandler::onMovementInputUpdate);
     }
 
     @Override

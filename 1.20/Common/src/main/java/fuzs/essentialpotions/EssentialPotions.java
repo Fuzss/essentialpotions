@@ -36,7 +36,8 @@ public class EssentialPotions implements ModConstructor {
     }
 
     private static void registerHandlers() {
-        LivingEvents.TICK.register(VanillaEffectsHandler::onLivingTick);
+        LivingEvents.TICK.register(VanillaEffectsHandler::onLivingTick$0);
+        LivingEvents.TICK.register(VanillaEffectsHandler::onLivingTick$1);
         LivingEvents.VISIBILITY.register(VanillaEffectsHandler::onLivingVisibility);
     }
 
